@@ -164,3 +164,12 @@ Notes on shooting it:
 - **Genre saturation.** Many other submissions use the same "flag a contradiction" mechanic. Mitigation: Section 4's tracked-resolution behavior is the thing to actually build and show, not just the flag itself.
 - **Scope creep.** The temptation will be to add more schemes, a search UI, deadline tracking, etc. Mitigation: Section 1 is the test — if a feature doesn't serve the one question, it doesn't go in.
 - **Judges checking the dataset against sources.** The challenge explicitly asks for a project ID or public dataset URL. Mitigation: use real clause text from the documents above, correctly attributed, not paraphrased-to-the-point-of-inaccuracy.
+
+[Sanity Context](https://www.sanity.io/docs/ai/sanity-context): required reading for the agent path
+[Day One with Sanity](https://sanity.io/learn): the guided course, start here if you're new
+[Sanity docs](https://sanity.io/docs): schemas, GROQ, Studio
+[Workflows](https://www.sanity.io/docs/workflows/cookbook): AI content pipelines, coordinated releases, and more
+[Knowledge Bases](https://www.sanity.io/docs/ai/sanity-context-knowledge-bases): getting started with Knowledge Bases
+[App SDK](https://www.sanity.io/docs/app-sdk/sdk-introduction): for the bonus path
+Framework quickstarts: [Next.js](https://www.sanity.io/docs/next-js-quickstart), [Astro](https://www.sanity.io/docs/astro-quickstart), [Nuxt](https://www.sanity.io/docs/nuxt-js-quickstart), [React Router](https://www.sanity.io/docs/react-router-quickstart)
+[Sanity Discord](https://snty.link/community): the Sanity team is in there, including a #mcp-server channel

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScholarStack — Scholarship Stacking Trap Detector</title>
+  <meta name="description" content="Sanity Context & Gemini powered AI agent that detects hidden non-stacking clauses across Indian scholarship rulebooks and tracks student resolutions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>ScholarStack <span class="badge-tag">Sanity Path One</span></h1>
+          <p class="brand-sub">Scholarship Non-Stacking Trap Detector & Tracked Resolution Agent</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-pill" id="mcp-status-pill">
+          <span class="status-dot pulsing"></span>
+          <span id="mcp-status-text">Sanity Context MCP: Connecting...</span>
+        </div>
+        <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer" class="studio-link-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Open Studio
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="main-layout">
+      <!-- Left Column: Query Arena & Results -->
+      <section class="workspace-panel">
+        
+        <!-- Preset Scenario Selector -->
+        <div class="preset-box">
+          <div class="preset-header">
+            <span class="label-title">⚡ Instant Test Cases (Hackathon Evaluation)</span>
+            <span class="preset-hint">Click any case to test real rulebook reasoning</span>
+          </div>
+          <div class="preset-buttons">
+            <button class="preset-btn" data-preset="direct-trap">
+              <span class="badge-conflict">Conflict</span>
+              <strong>Case 1: Goa + Samsung Trap</strong>
+              <small>State stipend vs Corporate CSR zero-tolerance clause</small>
+            </button>
+            <button class="preset-btn" data-preset="inverted-query">
+              <span class="badge-neutral">Inverted</span>
+              <strong>Case 2: Rephrased Query</strong>
+              <small>Samsung Scholar asking about Central Post-Matric</small>
+            </button>
+            <button class="preset-btn" data-preset="resolution-demo">
+              <span class="badge-differentiator">Differentiator</span>
+              <strong>Case 3: Resolved State Follow-Up</strong>
+              <small>After surrendering Scheme A, does Scheme C stack?</small>
+            </button>
+            <button class="preset-btn" data-preset="out-of-scope">
+              <span class="badge-refusal">Truthful Refusal</span>
+              <strong>Case 4: Out-of-Corpus Scheme</strong>
+              <small>Unverified international schemes (Zero hallucination)</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Student Context Bar -->
+        <div class="student-session-bar">
+          <div class="student-input-group">
+            <label for="student-id-input">Student Profile ID:</label>
+            <input type="text" id="student-id-input" value="student-akash-sharma" placeholder="Enter student roll or identifier">
+          </div>
+          <div class="session-badge" id="session-decisions-count">
+            0 Recorded Decisions in Sanity
+          </div>
+        </div>
+
+        <!-- Query Form -->
+        <form id="query-form" class="query-box">
+          <div class="textarea-wrapper">
+            <textarea 
+              id="question-input" 
+              rows="3" 
+              placeholder="Ask a stacking question, e.g.: 'I am receiving the Goa Home Nursing Scholarship. Can I also accept the Samsung Star Scholar Program?'"
+              required></textarea>
+            <button type="submit" id="submit-btn" class="ask-btn">
+              <span class="btn-text">Ask ScholarStack</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="query-tips">
+            <span>Powered by <strong>Sanity Context MCP</strong> & <strong>Gemini 2.5 Flash</strong></span>
+            <span>Press <kbd>Enter</kbd> to submit</span>
+          </div>
+        </form>
+
+        <!-- Loading State -->
+        <div id="loading-spinner" class="loading-container hidden">
+          <div class="spinner"></div>
+          <p class="loading-msg">Cross-referencing Sanity Knowledge Base & inspecting non-stacking clauses...</p>
+        </div>
+
+        <!-- Verdict Display Area -->
+        <div id="result-container" class="result-area hidden">
+          <!-- Populated dynamically via app.js -->
+        </div>
+
+      </section>
+
+      <!-- Right Column: Live Sanity Lake Inspector & History -->
+      <aside class="sidebar-panel">
+        
+        <!-- Tracked Decisions (Section 4 Differentiator) -->
+        <div class="card-widget">
+          <div class="card-widget-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Tracked Decisions (Differentiator)
+            </h3>
+            <span class="tag-accent">Live from Sanity</span>
+          </div>
+          <p class="widget-desc">
+            Resolutions logged here update the student's state in Sanity Content Lake, so the agent remembers surrendered schemes in future queries.
+          </p>
+          <div id="decisions-list" class="decisions-stream">
+            <div class="empty-state">No prior decisions recorded for this student yet. Ask a question to trigger a resolution.</div>
+          </div>
+        </div>
+
+        <!-- Verified Scheme Corpus -->
+        <div class="card-widget">
+          <div class="card-widget-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+              Verified Rulebook Corpus
+            </h3>
+            <span class="badge-count" id="scheme-count">6 Schemes</span>
+          </div>
+          <p class="widget-desc">Real clauses and rulebooks seeded directly into Sanity:</p>
+          <div id="schemes-list" class="schemes-accordion">
+            <!-- Loaded dynamically from /api/schemes -->
+          </div>
+        </div>
+
+      </aside>
+    </main>
+
+    <!-- Resolution Modal -->
+    <div id="resolution-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Record Formal Choice in Sanity</h3>
+          <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            The two schemes cannot be held concurrently. To avoid clawback and disqualification, select which scholarship the student will <strong>retain</strong> and which will be <strong>surrendered</strong>:
+          </p>
+
+          <div class="choice-selection-grid">
+            <div class="choice-option-card">
+              <label>Retain This Scheme:</label>
+              <select id="retain-scheme-select" class="form-select"></select>
+            </div>
+            <div class="choice-option-card">
+              <label>Surrender This Scheme:</label>
+              <select id="surrender-scheme-select" class="form-select"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="resolution-notes">Formal Surrender Letter / Rationale:</label>
+            <textarea id="resolution-notes" rows="2" class="form-textarea" placeholder="e.g. Student submitted Form 4 to Directorate of Social Welfare formally relinquishing Scheme A."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-modal-btn" class="btn-secondary">Cancel</button>
+          <button id="confirm-resolution-btn" class="btn-primary">Write Decision to Sanity</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>
+        <strong>ScholarStack</strong> &bull; Sanity Challenge Path One ("Ship an Agent That Queries Real Content") &bull; Built with Sanity Context MCP & Google Gemini
+      </p>
+      <div class="footer-links">
+        <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer">Sanity Studio</a>
+        <a href="https://github.com/Labreo/ScholarStack" target="_blank" rel="noopener noreferrer">GitHub Repo</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

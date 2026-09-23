@@ -1,0 +1,250 @@
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+import {
+  getAllSchemes,
+  getStudentDecisions,
+  ScholarshipScheme,
+  StudentDecision,
+} from './sanityClient'
+import { contextMcpClient } from './contextMcpClient'
+
+dotenv.config({path: path.resolve(process.cwd(), '.env')})
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+
+export interface EvaluationResult {
+  canStack: boolean | 'conditional' | 'unknown'
+  verdict: 'PROHIBITED' | 'ALLOWED' | 'CONDITIONAL' | 'OUT_OF_SCOPE'
+  summary: string
+  activeStudentContext?: {
+    studentId: string
+    previouslySurrenderedSchemes: string[]
+    activeRetainedSchemes: string[]
+  }
+  identifiedSchemes: {
+    schemeA?: {
+      title: string
+      authority: string
+      officialDocumentUrl: string
+      clauseRef: string
+      exactQuote: string
+      consequence: string
+    }
+    schemeB?: {
+      title: string
+      authority: string
+      officialDocumentUrl: string
+      clauseRef: string
+      exactQuote: string
+      consequence: string
+    }
+    unknownSchemes: string[]
+  }
+  conflictingClauses: Array<{
+    schemeTitle: string
+    clauseRef: string
+    exactQuote: string
+    officialDocumentUrl: string
+    consequence: string
+  }>
+  nextSteps: string
+  canResolve: boolean
+}
+
+/**
+ * Call Gemini 2.5 Flash API with robust retry and error diagnostics
+ */
+async function callGemini(prompt: string, systemInstruction?: string, maxRetries = 3): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured in .env')
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
+
+  const payload: any = {
+    contents: [
+      {
+        role: 'user',
+        parts: [{text: prompt}],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.1, // Low temperature for high precision and zero hallucinations
+      responseMimeType: 'application/json',
+    },
+  }
+
+  if (systemInstruction) {
+    payload.systemInstruction = {
+      parts: [{text: systemInstruction}],
+    }
+  }
+
+  let lastError: any = null
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(`Gemini API error (${response.status}): ${errText}`)
+      }
+
+      const data = await response.json()
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!text) {
+        throw new Error('Empty response from Gemini API')
+      }
+      return text
+    } catch (err: any) {
+      lastError = err
+      const cause = err.cause ? ` (Cause: ${err.cause.message || err.cause})` : ''
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1200 * attempt))
+      }
+    }
+  }
+
+  throw new Error(`Gemini API call failed after ${maxRetries} attempts: ${lastError.message}${lastError.cause ? ` (${lastError.cause.message || lastError.cause})` : ''}`)
+}
+
+/**
+ * Main Evaluation Engine: queries Sanity, checks student history, and evaluates stacking compatibility
+ */
+export async function evaluateStackingQuery(
+  question: string,
+  studentId = 'student-demo'
+): Promise<EvaluationResult> {
+  // 1. Fetch real schemes from Sanity Content Lake
+  const schemes = await getAllSchemes()
+
+  // 2. Fetch existing student decisions (Section 4 differentiator)
+  const studentDecisions = await getStudentDecisions(studentId)
+
+  const surrenderedIds = new Set<string>()
+  const surrenderedTitles: string[] = []
+  const retainedTitles: string[] = []
+
+  for (const d of studentDecisions) {
+    if (d.surrenderedScheme) {
+      surrenderedIds.add(d.surrenderedScheme._ref)
+      if (d.surrenderedScheme.title) surrenderedTitles.push(d.surrenderedScheme.title)
+    }
+    if (d.retainedScheme && d.retainedScheme.title) {
+      retainedTitles.push(d.retainedScheme.title)
+    }
+  }
+
+  // Filter schemes: exclude schemes that the student already formally surrendered
+  const activeSchemes = schemes.map((s) => ({
+    ...s,
+    isSurrenderedByStudent: surrenderedIds.has(s._id),
+  }))
+
+  // 3. Fetch live Sanity Context MCP initial context (official schema & rules)
+  const mcpContext = await contextMcpClient.fetchInitialContext()
+
+  const systemPrompt = `You are ScholarStack, an expert legal-technical agent specialized in detecting Indian scholarship non-stacking clauses, concurrent award disqualifications, and clawback provisions.
+
+YOUR CORE MANDATE:
+1. You answer whether a student holding Scheme A can also accept Scheme B.
+2. You cite the exact verbatim clause and official PDF source URL for every restriction.
+3. Zero tolerance for hallucinations: If a scheme mentioned by the user is NOT present in the verified Knowledge Base below, you MUST declare it OUT_OF_SCOPE and state that you have no verified rules for it.
+4. Tracked Decision Awareness: If the student previously surrendered Scheme A (as noted in their history), you MUST recognize that Scheme A is no longer active and ONLY evaluate the active/new scheme against the requested scheme.
+
+OFFICIAL SANITY CONTEXT MCP SCHEMA (Live from Sanity MCP endpoint):
+${mcpContext || 'Sanity Context MCP schema active.'}
+
+VERIFIED KNOWLEDGE BASE OF OFFICIAL SCHEMES (From Sanity Content Lake):
+${JSON.stringify(activeSchemes, null, 2)}
+
+STUDENT HISTORY FOR ${studentId}:
+- Formally Surrendered Schemes: ${JSON.stringify(surrenderedTitles)}
+- Active Retained Schemes: ${JSON.stringify(retainedTitles)}
+
+REQUIRED JSON OUTPUT FORMAT:
+{
+  "canStack": boolean | "conditional" | "unknown",
+  "verdict": "PROHIBITED" | "ALLOWED" | "CONDITIONAL" | "OUT_OF_SCOPE",
+  "summary": "Clear, direct 1-2 sentence verdict",
+  "identifiedSchemeTitles": ["Title 1", "Title 2"],
+  "unknownSchemeTitles": ["Any scheme not in Knowledge Base"],
+  "conflicts": [
+    {
+      "schemeTitle": "string",
+      "clauseRef": "string",
+      "exactQuote": "Verbatim quote from scheme stackingRule",
+      "officialDocumentUrl": "URL to PDF",
+      "consequence": "Penalty/clawback"
+    }
+  ],
+  "nextSteps": "Official procedure (e.g. written surrender option or permission request)",
+  "canResolve": boolean // true if student has a conflict and needs to choose which to surrender
+}`
+
+  const userPrompt = `Student Question: "${question}"
+
+Analyze the question against the verified Knowledge Base and the student's historical resolution state. Return the strict JSON output.`
+
+  const rawJson = await callGemini(userPrompt, systemPrompt)
+  let parsed: any
+  try {
+    parsed = JSON.parse(rawJson)
+  } catch (e) {
+    throw new Error(`Failed to parse agent JSON output: ${rawJson}`)
+  }
+
+  // Match schemes to populate complete metadata
+  const findScheme = (titleOrPart: string) => {
+    return schemes.find(
+      (s) =>
+        s.title.toLowerCase().includes(titleOrPart.toLowerCase()) ||
+        titleOrPart.toLowerCase().includes(s.title.toLowerCase())
+    )
+  }
+
+  const identifiedTitles = parsed.identifiedSchemeTitles || []
+  const schemeAObj = identifiedTitles[0] ? findScheme(identifiedTitles[0]) : undefined
+  const schemeBObj = identifiedTitles[1] ? findScheme(identifiedTitles[1]) : undefined
+
+  return {
+    canStack: parsed.canStack,
+    verdict: parsed.verdict,
+    summary: parsed.summary,
+    activeStudentContext: {
+      studentId,
+      previouslySurrenderedSchemes: surrenderedTitles,
+      activeRetainedSchemes: retainedTitles,
+    },
+    identifiedSchemes: {
+      schemeA: schemeAObj
+        ? {
+            title: schemeAObj.title,
+            authority: schemeAObj.authority,
+            officialDocumentUrl: schemeAObj.officialDocumentUrl,
+            clauseRef: schemeAObj.stackingRule.clauseReference,
+            exactQuote: schemeAObj.stackingRule.exactClauseText,
+            consequence: schemeAObj.stackingRule.consequenceOfViolation,
+          }
+        : undefined,
+      schemeB: schemeBObj
+        ? {
+            title: schemeBObj.title,
+            authority: schemeBObj.authority,
+            officialDocumentUrl: schemeBObj.officialDocumentUrl,
+            clauseRef: schemeBObj.stackingRule.clauseReference,
+            exactQuote: schemeBObj.stackingRule.exactClauseText,
+            consequence: schemeBObj.stackingRule.consequenceOfViolation,
+          }
+        : undefined,
+      unknownSchemes: parsed.unknownSchemeTitles || [],
+    },
+    conflictingClauses: parsed.conflicts || [],
+    nextSteps: parsed.nextSteps,
+    canResolve: parsed.canResolve || parsed.verdict === 'PROHIBITED',
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "scholarstack",
+  "version": "1.0.0",
+  "description": "ScholarStack - Scholarship Stacking Trap Detector powered by Sanity Context & Gemini",
+  "private": true,
+  "scripts": {
+    "start": "tsx agent/src/server.ts",
+    "dev": "tsx agent/src/server.ts",
+    "seed": "tsx scripts/seedCorpus.ts",
+    "test:checks": "tsx scripts/testChecks.ts",
+    "studio:dev": "npm --prefix studio run dev",
+    "studio:build": "npm --prefix studio run build",
+    "studio:deploy": "npm --prefix studio run deploy"
+  },
+  "dependencies": {
+    "@sanity/client": "^6.28.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
