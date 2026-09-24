@@ -111,7 +111,7 @@ app.use((req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 ScholarStack Agent & Web App running on http://localhost:${PORT}`)
-  console.log(`📍 Sanity Studio: https://scholarstack-rules.sanity.studio`)
-  console.log(`📍 Sanity Context MCP: ${process.env.SANITY_MCP_URL}\n`)
+  console.log(`\n[scholarstack] Agent & Web App online at http://localhost:${PORT}`)
+  console.log(`[scholarstack] Sanity Studio: https://scholarstack-rules.sanity.studio`)
+  console.log(`[scholarstack] Sanity Context MCP: ${process.env.SANITY_MCP_URL}\n`)
 })

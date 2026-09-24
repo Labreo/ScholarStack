@@ -59,3 +59,15 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Local contest submission draft & video demo scripts
+SUBMISSION.md
+DEMO_SCRIPT.md
+VIDEO_WALKTHROUGH.md
+
+# Video media recordings
+*.mp4
+*.mov
+*.webm
+*.mkv
+DEMO_SCRIPT.md

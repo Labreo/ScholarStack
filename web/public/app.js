@@ -1,10 +1,11 @@
 // ScholarStack Client Application Logic
+// Modern Terminal & Compliance Workspace (Anti-Slop Design)
 
 let allSchemes = []
 let currentEvaluation = null
 
-// Preset Scenarios
-const PRESETS = {
+// Real-world sample compliance scenarios
+const SAMPLES = {
   'direct-trap': {
     question: 'I am getting the Goa Home Nursing Scholarship. Can I also accept the Samsung Star Scholar Program?',
     studentId: 'student-akash-sharma',
@@ -37,15 +38,15 @@ async function initApp() {
 }
 
 function setupEventListeners() {
-  // Preset buttons
-  document.querySelectorAll('.preset-btn').forEach((btn) => {
+  // Preset query pills
+  document.querySelectorAll('.preset-pill').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const presetKey = btn.dataset.preset
-      const preset = PRESETS[presetKey]
-      if (preset) {
-        document.getElementById('question-input').value = preset.question
-        if (preset.studentId) {
-          document.getElementById('student-id-input').value = preset.studentId
+      const sampleKey = btn.dataset.sample
+      const sample = SAMPLES[sampleKey]
+      if (sample) {
+        document.getElementById('question-input').value = sample.question
+        if (sample.studentId) {
+          document.getElementById('student-id-input').value = sample.studentId
           loadStudentHistory()
         }
         submitQuery()
@@ -53,7 +54,26 @@ function setupEventListeners() {
     })
   })
 
-  // Student ID change
+  // Quick student identifier buttons
+  document.querySelectorAll('.quick-id-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id
+      if (id) {
+        document.getElementById('student-id-input').value = id
+        loadStudentHistory()
+      }
+    })
+  })
+
+  // Scheme search filter
+  const searchInput = document.getElementById('scheme-search-input')
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      filterSchemes(e.target.value)
+    })
+  }
+
+  // Student ID input change
   document.getElementById('student-id-input').addEventListener('change', () => {
     loadStudentHistory()
   })
@@ -76,6 +96,13 @@ function setupEventListeners() {
   document.getElementById('close-modal-btn').addEventListener('click', closeModal)
   document.getElementById('cancel-modal-btn').addEventListener('click', closeModal)
   document.getElementById('confirm-resolution-btn').addEventListener('click', confirmResolution)
+
+  // Esc key closes modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal()
+    }
+  })
 }
 
 // 1. Check Live Context MCP Status
@@ -88,54 +115,77 @@ async function checkStatus() {
     const data = await res.json()
 
     if (data.sanity?.contextMcp?.connected) {
-      pill.style.background = 'rgba(16, 185, 129, 0.15)'
-      pill.style.borderColor = 'rgba(16, 185, 129, 0.4)'
-      pill.style.color = '#6ee7b7'
-      text.innerHTML = `Context MCP: <strong>Live & Connected</strong> (${data.sanity.contextMcp.tools.length} Tools)`
+      text.textContent = `MCP Online (${data.sanity.contextMcp.tools.length} tools)`
+      pill.style.borderColor = 'var(--status-green-border)'
     } else {
-      pill.style.background = 'rgba(245, 158, 11, 0.15)'
-      pill.style.borderColor = 'rgba(245, 158, 11, 0.4)'
-      pill.style.color = '#fcd34d'
-      text.textContent = 'Sanity Lake: Connected (Studio Schema Loaded)'
+      text.textContent = 'Lake: Connected'
+      pill.style.borderColor = 'var(--status-yellow-border)'
     }
   } catch (err) {
-    pill.style.color = '#f87171'
-    text.textContent = 'MCP Endpoint: Offline'
+    text.textContent = 'MCP Offline'
+    pill.style.borderColor = 'var(--status-red-border)'
   }
 }
 
-// 2. Load Verified Schemes from Sanity
+// 2. Load and Filter Verified Schemes from Sanity
 async function loadSchemes() {
-  const container = document.getElementById('schemes-list')
-  const countBadge = document.getElementById('scheme-count')
-
   try {
     const res = await fetch('/api/schemes')
     const data = await res.json()
     allSchemes = data.schemes || []
-
-    countBadge.textContent = `${allSchemes.length} Schemes`
-    container.innerHTML = allSchemes
-      .map(
-        (s) => `
-      <div class="scheme-card-item" onclick="insertSchemeToQuery('${escapeHtml(s.title)}')">
-        <div class="scheme-item-top">
-          <span class="scheme-item-title">${escapeHtml(s.title)}</span>
-          <span class="category-tag ${s.category}">${s.category}</span>
-        </div>
-        <div class="scheme-item-quote">
-          "${escapeHtml(s.stackingRule?.exactClauseText || 'No restriction specified')}"
-        </div>
-      </div>
-    `
-      )
-      .join('')
+    renderSchemes(allSchemes)
   } catch (err) {
-    container.innerHTML = `<div class="empty-state">Failed to load schemes: ${err.message}</div>`
+    document.getElementById('schemes-list').innerHTML = `<div class="empty-notice">Failed to load schemes: ${escapeHtml(err.message)}</div>`
   }
 }
 
-// 3. Load Student Decision History (Section 4 Differentiator)
+function filterSchemes(query) {
+  const q = query.toLowerCase().trim()
+  if (!q) {
+    renderSchemes(allSchemes)
+    return
+  }
+  const filtered = allSchemes.filter(
+    (s) =>
+      s.title.toLowerCase().includes(q) ||
+      (s.category && s.category.toLowerCase().includes(q)) ||
+      (s.stackingRule?.exactClauseText && s.stackingRule.exactClauseText.toLowerCase().includes(q))
+  )
+  renderSchemes(filtered)
+}
+
+function renderSchemes(schemes) {
+  const container = document.getElementById('schemes-list')
+  const countBadge = document.getElementById('scheme-count')
+
+  if (countBadge) {
+    countBadge.textContent = `${schemes.length} Scheme${schemes.length === 1 ? '' : 's'}`
+  }
+
+  if (schemes.length === 0) {
+    container.innerHTML = `<div class="empty-notice">No matching rulebooks found.</div>`
+    return
+  }
+
+  container.innerHTML = schemes
+    .map((s) => {
+      const catClass = s.category ? s.category.toLowerCase().replace(/[^a-z]/g, '') : 'general'
+      return `
+        <div class="scheme-row" onclick="insertSchemeToQuery('${escapeHtml(s.title)}')">
+          <div class="scheme-row-top">
+            <span class="scheme-row-title">${escapeHtml(s.title)}</span>
+            <span class="scheme-row-badge ${catClass}">${escapeHtml(s.category || 'Rulebook')}</span>
+          </div>
+          <div class="scheme-row-quote">
+            "${escapeHtml(s.stackingRule?.exactClauseText || 'No restriction specified')}"
+          </div>
+        </div>
+      `
+    })
+    .join('')
+}
+
+// 3. Load Student Decision History (Sanity Audit Trail)
 async function loadStudentHistory() {
   const studentId = document.getElementById('student-id-input').value.trim()
   const list = document.getElementById('decisions-list')
@@ -148,31 +198,43 @@ async function loadStudentHistory() {
     const data = await res.json()
     const history = data.history || []
 
-    countBadge.textContent = `${history.length} Recorded Decision${history.length === 1 ? '' : 's'} in Sanity`
+    countBadge.textContent = `${history.length} Recorded`
 
     if (history.length === 0) {
-      list.innerHTML = `<div class="empty-state">No prior decisions recorded for <strong>${escapeHtml(studentId)}</strong>. Conflicts resolved will persist here.</div>`
+      list.innerHTML = `<div class="empty-notice">No prior resolutions recorded for ${escapeHtml(studentId)}. Relinquishments committed in Sanity Lake will persist here.</div>`
       return
     }
 
     list.innerHTML = history
       .map(
         (h) => `
-      <div class="decision-item">
-        <div class="decision-header">
-          <span>${new Date(h.resolvedAt).toLocaleDateString()}</span>
-          <span class="tag-accent">${h.resolutionStatus}</span>
+      <div class="decision-log-entry">
+        <div class="log-meta-line">
+          <span>${new Date(h.resolvedAt).toISOString().split('T')[0]}</span>
+          <span class="log-status-tag">${escapeHtml(h.resolutionStatus || 'COMMITTED')}</span>
         </div>
-        <div class="decision-content">
-          <div>Kept: <strong>${escapeHtml(h.retainedScheme?.title || 'Unknown')}</strong></div>
-          <div>Surrendered: <span>${escapeHtml(h.surrenderedScheme?.title || 'Unknown')}</span></div>
+        <div class="log-row">
+          <span class="log-lbl">RETAINED:</span>
+          <span class="log-val"><strong>${escapeHtml(h.retainedScheme?.title || 'Unknown')}</strong></span>
         </div>
+        <div class="log-row">
+          <span class="log-lbl">SURRENDERED:</span>
+          <span class="log-val">${escapeHtml(h.surrenderedScheme?.title || 'Unknown')}</span>
+        </div>
+        ${
+          h.notes
+            ? `<div class="log-row">
+                <span class="log-lbl">REF_MEMO:</span>
+                <span class="log-val" style="color: var(--text-muted); font-size: 0.72rem;">${escapeHtml(h.notes)}</span>
+              </div>`
+            : ''
+        }
       </div>
     `
       )
       .join('')
   } catch (err) {
-    list.innerHTML = `<div class="empty-state">Error fetching history: ${err.message}</div>`
+    list.innerHTML = `<div class="empty-notice">Error reading audit history: ${escapeHtml(err.message)}</div>`
   }
 }
 
@@ -188,7 +250,6 @@ async function submitQuery() {
   if (!question) return
 
   loading.classList.remove('hidden')
-  resultContainer.classList.add('hidden')
   submitBtn.disabled = true
 
   try {
@@ -208,65 +269,62 @@ async function submitQuery() {
     renderResult(data)
   } catch (err) {
     resultContainer.innerHTML = `
-      <div class="verdict-card prohibited">
-        <div class="verdict-badge">Error</div>
-        <div class="verdict-summary">${escapeHtml(err.message)}</div>
+      <div class="verdict-box prohibited">
+        <div class="verdict-header-row">
+          <span class="verdict-banner-tag">EVALUATION FAILED</span>
+        </div>
+        <div class="verdict-summary-text">${escapeHtml(err.message)}</div>
       </div>
     `
-    resultContainer.classList.remove('hidden')
   } finally {
     loading.classList.add('hidden')
     submitBtn.disabled = false
   }
 }
 
-// 5. Render Verdict & Citations
+// 5. Render Verdict & Citations (Zero Emojis, Pure Monospace Hierarchy)
 function renderResult(data) {
   const container = document.getElementById('result-container')
 
-  let cardClass = 'prohibited'
-  let badgeText = '⛔ Stacking Trap Detected'
+  let boxClass = 'prohibited'
+  let bannerTag = '<span class="verdict-banner-tag">NON-STACKING CONFLICT DETECTED</span>'
 
   if (data.verdict === 'ALLOWED') {
-    cardClass = 'allowed'
-    badgeText = '✅ Stacking Permitted'
+    boxClass = 'allowed'
+    bannerTag = '<span class="verdict-banner-tag">CONCURRENT AWARDS PERMITTED</span>'
   } else if (data.verdict === 'CONDITIONAL') {
-    cardClass = 'conditional'
-    badgeText = '⚠️ Conditional (Prior Permission Required)'
+    boxClass = 'conditional'
+    bannerTag = '<span class="verdict-banner-tag">CONDITIONAL APPROVAL REQUIRED</span>'
   } else if (data.verdict === 'OUT_OF_SCOPE') {
-    cardClass = 'conditional'
-    badgeText = '🔍 Out of Verified Scope'
+    boxClass = 'conditional'
+    bannerTag = '<span class="verdict-banner-tag">SCHEME NOT IN VERIFIED CORPUS</span>'
   }
 
-  // Format conflicting clauses
+  // Format conflicting clauses from Sanity Content Lake
   let clausesHtml = ''
   if (data.conflictingClauses && data.conflictingClauses.length > 0) {
     clausesHtml = `
-      <div class="clauses-container">
-        <h4 style="font-size: 0.9rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">
-          Verbatim Non-Stacking Clauses (Sanity Content Lake):
-        </h4>
+      <div class="clauses-section">
+        <div class="clauses-title">
+          VERBATIM NON-STACKING CLAUSES (SANITY CONTENT LAKE):
+        </div>
         ${data.conflictingClauses
           .map(
             (c) => `
-          <div class="clause-card">
-            <div class="clause-header">
-              <span class="scheme-name">${escapeHtml(c.schemeTitle)}</span>
-              <span class="clause-ref-tag">${escapeHtml(c.clauseRef || 'Official Rulebook')}</span>
+          <div class="clause-item">
+            <div class="clause-meta">
+              <span class="clause-scheme-title">${escapeHtml(c.schemeTitle)}</span>
+              <span class="clause-rule-cite">${escapeHtml(c.clauseRef || 'Official Rulebook')}</span>
             </div>
-            <div class="clause-quote-box">
-              "${escapeHtml(c.exactQuote)}"
+            <div class="clause-quote-text">
+              &gt; "${escapeHtml(c.exactQuote)}"
             </div>
-            <div class="clause-footer">
-              <span class="clause-consequence">Penalty: ${escapeHtml(c.consequence || 'Disqualification & Clawback')}</span>
+            <div class="clause-footer-row">
+              <span class="clause-penalty-tag">PENALTY: ${escapeHtml(c.consequence || 'Disqualification & Clawback')}</span>
               ${
                 c.officialDocumentUrl
-                  ? `<a href="${c.officialDocumentUrl}" target="_blank" rel="noopener noreferrer" class="official-pdf-link">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      Inspect Official Rulebook PDF
+                  ? `<a href="${c.officialDocumentUrl}" target="_blank" rel="noopener noreferrer" class="pdf-link-btn">
+                      Inspect Official PDF &rarr;
                     </a>`
                   : ''
               }
@@ -279,40 +337,49 @@ function renderResult(data) {
     `
   }
 
-  // Resolution button
+  // Resolution action prompt
   let resolveHtml = ''
   if (data.canResolve) {
     resolveHtml = `
-      <div class="resolution-prompt-card">
-        <div>
-          <strong>Persistent State Differentiator:</strong>
-          <p>Log the student's formal surrender choice into Sanity so subsequent questions reason from this updated state.</p>
+      <div class="resolution-box">
+        <div class="resolution-info">
+          <span class="resolution-title">Administrative Action: Resolve Conflict</span>
+          <span class="resolution-desc">
+            To prevent recovery proceedings and disqualification, record the student's formal relinquishment of one award into Sanity Content Lake.
+          </span>
         </div>
-        <button class="resolve-btn" onclick="openResolutionModal()">Resolve Conflict in Sanity</button>
+        <button class="btn-open-resolution" onclick="openResolutionModal()">
+          Record Formal Relinquishment &rarr;
+        </button>
+      </div>
+    `
+  }
+
+  // Procedure callout
+  let procedureHtml = ''
+  if (data.nextSteps) {
+    procedureHtml = `
+      <div class="procedure-callout">
+        <div class="procedure-title">ADMINISTRATIVE PROCEDURE:</div>
+        <div>${escapeHtml(data.nextSteps)}</div>
       </div>
     `
   }
 
   container.innerHTML = `
-    <div class="verdict-card ${cardClass}">
-      <div class="verdict-badge">${badgeText}</div>
-      <div class="verdict-summary">${escapeHtml(data.summary)}</div>
-      
-      ${
-        data.nextSteps
-          ? `<div style="font-size: 0.88rem; color: #94a3b8; margin-top: 6px;">
-              <strong>Official Procedure:</strong> ${escapeHtml(data.nextSteps)}
-            </div>`
-          : ''
-      }
-
+    <div class="verdict-box ${boxClass}">
+      <div class="verdict-header-row">
+        ${bannerTag}
+        <span class="confidence-indicator">confidence: verified</span>
+      </div>
+      <div class="verdict-summary-text">${escapeHtml(data.summary)}</div>
+      ${procedureHtml}
       ${clausesHtml}
       ${resolveHtml}
     </div>
   `
 
-  container.classList.remove('hidden')
-  container.scrollIntoView({behavior: 'smooth', block: 'nearest'})
+  container.scrollTop = 0
 }
 
 // 6. Resolution Modal Handlers
@@ -355,12 +422,12 @@ async function confirmResolution() {
   const confirmBtn = document.getElementById('confirm-resolution-btn')
 
   if (retainId === surrenderId) {
-    alert('Please choose different schemes to retain and surrender.')
+    alert('Please select different schemes for retention and surrender.')
     return
   }
 
   confirmBtn.disabled = true
-  confirmBtn.textContent = 'Writing to Sanity...'
+  confirmBtn.textContent = 'Committing to Sanity...'
 
   try {
     const res = await fetch('/api/resolve', {
@@ -382,12 +449,12 @@ async function confirmResolution() {
     closeModal()
     await loadStudentHistory()
 
-    alert('Resolution successfully committed to Sanity Content Lake! The agent will now carry this decision forward.')
+    alert('Decision successfully committed to Sanity Content Lake. The compliance engine will carry this decision across subsequent inquiries.')
   } catch (err) {
-    alert('Error recording decision: ' + err.message)
+    alert('Error recording decision in Sanity: ' + err.message)
   } finally {
     confirmBtn.disabled = false
-    confirmBtn.textContent = 'Write Decision to Sanity'
+    confirmBtn.textContent = 'Commit Decision to Sanity Lake'
   }
 }
 
@@ -407,3 +474,4 @@ function escapeHtml(text) {
   div.textContent = text
   return div.innerHTML
 }
+

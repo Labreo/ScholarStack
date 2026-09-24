@@ -51,15 +51,12 @@ export interface EvaluationResult {
   canResolve: boolean
 }
 
-/**
- * Call Gemini 2.5 Flash API with robust retry and error diagnostics
- */
-async function callGemini(prompt: string, systemInstruction?: string, maxRetries = 3): Promise<string> {
+const CANDIDATE_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash']
+
+async function callGemini(prompt: string, systemInstruction?: string, maxRetries = 2): Promise<string> {
   if (!GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not configured in .env')
   }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
 
   const payload: any = {
     contents: [
@@ -69,7 +66,7 @@ async function callGemini(prompt: string, systemInstruction?: string, maxRetries
       },
     ],
     generationConfig: {
-      temperature: 0.1, // Low temperature for high precision and zero hallucinations
+      temperature: 0.1,
       responseMimeType: 'application/json',
     },
   }
@@ -81,35 +78,46 @@ async function callGemini(prompt: string, systemInstruction?: string, maxRetries
   }
 
   let lastError: any = null
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload),
-      })
 
-      if (!response.ok) {
-        const errText = await response.text()
-        throw new Error(`Gemini API error (${response.status}): ${errText}`)
-      }
+  // Try candidate models in order (2.5-flash -> 2.0-flash -> 1.5-flash)
+  for (const modelName of CANDIDATE_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`
 
-      const data = await response.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-      if (!text) {
-        throw new Error('Empty response from Gemini API')
-      }
-      return text
-    } catch (err: any) {
-      lastError = err
-      const cause = err.cause ? ` (Cause: ${err.cause.message || err.cause})` : ''
-      if (attempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 1200 * attempt))
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload),
+        })
+
+        if (response.status === 429) {
+          const errText = await response.text()
+          lastError = new Error(`Quota limit on ${modelName}: ${errText}`)
+          break // break retry loop to switch to next model immediately
+        }
+
+        if (!response.ok) {
+          const errText = await response.text()
+          throw new Error(`Gemini API error (${response.status}) on ${modelName}: ${errText}`)
+        }
+
+        const data = await response.json()
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+        if (!text) {
+          throw new Error(`Empty response from Gemini API on ${modelName}`)
+        }
+        return text
+      } catch (err: any) {
+        lastError = err
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1000 * attempt))
+        }
       }
     }
   }
 
-  throw new Error(`Gemini API call failed after ${maxRetries} attempts: ${lastError.message}${lastError.cause ? ` (${lastError.cause.message || lastError.cause})` : ''}`)
+  throw new Error(`Gemini API call failed across all models: ${lastError.message}`)
 }
 
 /**
