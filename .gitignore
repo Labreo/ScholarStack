@@ -2,14 +2,24 @@
 .env
 .env.*
 !.env.example
+!.env*.example
 *.env
 *.env.local
+*.pem
+*.key
+*.cert
+*.crt
 
 # Dependencies
 node_modules/
 **/node_modules/
 /.pnp
 .pnp.js
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
 
 # Build outputs and caches
 dist/
@@ -17,29 +27,46 @@ dist/
 build/
 **/build/
 out/
+**/out/
 .next/
 .cache/
 **/.cache/
 .sanity/
 **/.sanity/
 *.tsbuildinfo
+.vite/
+**/.vite/
+.turbo/
+**/.turbo/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.prettiercache
 
 # Agent / Tooling local caches
 .agents/
 skills-lock.json
 .system_generated/
+.gemini/
+.claude/
+.cursor/
 
-# Logs
+# Logs & Runtime
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 *.log
+logs/
+*.pid
+*.pid.lock
+*.seed
 
 # Testing & Coverage
 coverage/
 *.lcov
+.nyc_output/
 
 # OS generated files
 .DS_Store
@@ -49,16 +76,32 @@ coverage/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Icon
+Desktop.ini
+$RECYCLE.BIN/
 
 # IDE and Editor files
 .idea/
+*.iml
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Temporary & scratch files
+tmp/
+temp/
+*.tmp
+*.bak
 
 # Local contest submission draft & video demo scripts
 SUBMISSION.md
@@ -70,4 +113,5 @@ VIDEO_WALKTHROUGH.md
 *.mov
 *.webm
 *.mkv
-DEMO_SCRIPT.md
+*.avi
+recordings/
