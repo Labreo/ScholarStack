@@ -6,6 +6,8 @@
   "scripts": {
     "start": "tsx agent/src/server.ts",
     "dev": "tsx agent/src/server.ts",
+    "build:css": "tailwindcss -i ./web/input.css -o ./web/public/style.css --minify",
+    "watch:css": "tailwindcss -i ./web/input.css -o ./web/public/style.css --watch",
     "seed": "tsx scripts/seedCorpus.ts",
     "test:checks": "tsx scripts/testChecks.ts",
     "studio:dev": "npm --prefix studio run dev",
@@ -22,6 +24,8 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.13.0",
+    "daisyui": "^4.12.24",
+    "tailwindcss": "^3.4.19",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3"
   }

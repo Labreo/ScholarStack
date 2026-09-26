@@ -1,242 +1,716 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScholarStack :: Scholarship Non-Stacking Compliance Engine</title>
-  <meta name="description" content="Automated multi-award scholarship compliance and non-stacking rulebook verification engine powered by Sanity Content Lake and Sanity Context MCP.">
+  <title>ScholarStack | Financial Aid & Scholarship Compliance Portal</title>
+  <meta name="description" content="Institutional financial aid compliance engine. Verify multi-award stacking rules, regulatory clauses, and official gazette covenants powered by Sanity Content Lake.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-  <div class="app-layout">
-    
-    <!-- Top Navigation Bar -->
-    <header class="terminal-header">
-      <div class="header-left">
-        <span class="terminal-symbol">&gt;</span>
-        <span class="app-logo">scholarstack</span>
-        <span class="version-tag">v1.0.0</span>
-        <span class="separator">::</span>
-        <span class="app-desc">scholarship non-stacking compliance engine</span>
+<body class="bg-base-200 text-base-content min-h-screen flex flex-col font-sans">
+
+  <!-- Top Institutional Navigation Bar -->
+  <header class="navbar bg-base-100 border-b border-base-300 sticky top-0 z-40 px-4 lg:px-8 shadow-sm">
+    <div class="navbar-start gap-3">
+      <!-- Mobile Navigation Dropdown -->
+      <div class="dropdown lg:hidden">
+        <label tabindex="0" class="btn btn-ghost btn-square btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </label>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 border border-base-300">
+          <li><a id="mob-tab-verify" class="active font-medium">Award Verifier</a></li>
+          <li><a id="mob-tab-ledger" class="font-medium">My Awards &amp; Ledger</a></li>
+          <li><a id="mob-tab-directory" class="font-medium">Policy Directory</a></li>
+        </ul>
       </div>
 
-      <div class="header-right">
-        <div class="status-indicator" id="mcp-status-pill">
-          <span class="status-dot"></span>
-          <span id="mcp-status-text">MCP Online (4 tools)</span>
+      <!-- Brand Logo & Title -->
+      <a href="/" class="flex items-center gap-2.5 normal-case font-bold text-lg tracking-tight hover:opacity-90">
+        <div class="w-8 h-8 rounded-lg bg-primary text-primary-content flex items-center justify-center shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
         </div>
-        <div class="status-indicator">
-          <span class="status-dot green"></span>
-          <span>Lake: Production</span>
+        <div class="flex flex-col">
+          <span class="leading-none text-base font-bold">ScholarStack</span>
+          <span class="text-[10px] text-base-content/60 font-normal uppercase tracking-wider mt-0.5">Financial Aid Portal</span>
         </div>
-        <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer" class="nav-action-btn">
-          Sanity Studio &rarr;
-        </a>
-      </div>
-    </header>
+      </a>
+    </div>
 
-    <!-- 3-Column Working Grid (Center of Focus Architecture) -->
-    <main class="main-content">
-      
-      <!-- Left Panel: Verified Rulebook Corpus (Quiet Reference) -->
-      <aside class="side-panel left-panel">
-        <div class="panel-card full-height">
-          <div class="panel-header">
-            <div class="panel-header-title">
-              <span class="panel-title">Rulebook Corpus</span>
-              <span class="panel-tag" id="scheme-count">26 Schemes</span>
-            </div>
-            <span class="panel-sub">Sanity Knowledge Base</span>
-          </div>
-          
-          <!-- Scheme Quick Search Filter -->
-          <div class="panel-filter-bar">
-            <input type="text" id="scheme-search-input" placeholder="Filter rulebooks..." spellcheck="false" autocomplete="off">
-          </div>
-
-          <div id="schemes-list" class="schemes-feed">
-            <!-- Loaded dynamically from /api/schemes -->
-          </div>
-        </div>
-      </aside>
-
-      <!-- Center Column: Primary Interactive Verification Console (Hero Focus) -->
-      <section class="center-console">
-        
-        <!-- Query Terminal Form (The Hero Element) -->
-        <form id="query-form" class="query-terminal">
-          <div class="terminal-toolbar">
-            <div class="toolbar-left">
-              <span class="input-prompt">&gt;</span>
-              <span class="terminal-heading">Compliance Audit Query</span>
-            </div>
-            <div class="toolbar-right">
-              <span class="engine-info">Sanity Context MCP &bull; Gemini 3.5 Flash</span>
-            </div>
-          </div>
-
-          <div class="terminal-input-wrapper">
-            <textarea 
-              id="question-input" 
-              rows="3" 
-              placeholder="Enter dual-scholarship inquiry (e.g. 'I am receiving the Goa Home Nursing Stipend. Can I also accept the Samsung Star Scholar Award?')"
-              required
-              spellcheck="false"></textarea>
-          </div>
-
-          <!-- Bottom Action Bar with Search Suggestions & Submit -->
-          <div class="terminal-action-row">
-            <div class="suggested-queries">
-              <span class="suggestions-label">Presets:</span>
-              <button type="button" class="preset-pill" data-sample="direct-trap" title="Goa Home Nursing vs Samsung Star Scholar">
-                Goa Nursing + Samsung Star
-              </button>
-              <button type="button" class="preset-pill" data-sample="inverted-query" title="Samsung Star Scholar vs Central Post-Matric SC/ST">
-                Samsung Star + Central SC/ST
-              </button>
-              <button type="button" class="preset-pill" data-sample="resolution-demo" title="Surrendered Goa follow-up with FTII Fellowship">
-                Surrendered Goa + FTII
-              </button>
-              <button type="button" class="preset-pill" data-sample="out-of-scope" title="External unverified international scheme">
-                Out of Scope Check
-              </button>
-            </div>
-
-            <div class="terminal-action-btns">
-              <span class="kbd-hint">Enter &crarr;</span>
-              <button type="submit" id="submit-btn" class="execute-btn">
-                Run Compliance Check &rarr;
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <!-- Loading / Progress State -->
-        <div id="loading-spinner" class="terminal-loading hidden">
-          <div class="loader-line">
-            <span class="loader-prefix">&gt;&gt;</span>
-            <span class="loader-text">Querying Sanity Content Lake via Context MCP... evaluating non-stacking clauses</span>
-          </div>
-        </div>
-
-        <!-- Scrollable Verdict & Citations Area (Flex fill with internal scroll) -->
-        <div id="result-container" class="verdict-container">
-          <div class="verdict-idle-state">
-            <div class="idle-top">
-              <span class="idle-prompt">&gt; READY</span>
-              <h2 class="idle-title">Scholarship Non-Stacking Verification Console</h2>
-            </div>
-            <p class="idle-desc">
-              Submit a multi-scholarship combination above to extract verbatim anti-stacking covenants directly from Sanity Content Lake and determine regulatory compatibility.
-            </p>
-            <div class="idle-grid">
-              <div class="idle-card">
-                <div class="idle-card-num">01</div>
-                <div class="idle-card-title">Sanity Knowledge Base</div>
-                <div class="idle-card-text">Cross-references official gazettes, CSR covenants, and Directorate rulebooks indexed in Sanity.</div>
-              </div>
-              <div class="idle-card">
-                <div class="idle-card-num">02</div>
-                <div class="idle-card-title">Verbatim Clause Evidence</div>
-                <div class="idle-card-text">Pinpoints exact section citations, penalty clauses, and direct links to official PDF sources.</div>
-              </div>
-              <div class="idle-card">
-                <div class="idle-card-num">03</div>
-                <div class="idle-card-title">Audit Ledger &amp; Carryover</div>
-                <div class="idle-card-text">Records formal student award relinquishments into Sanity Lake to govern future evaluations.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- Right Column: Student Profile & Live Sanity Audit Stream -->
-      <aside class="side-panel right-panel">
-        <div class="panel-card full-height">
-          <div class="panel-header">
-            <div class="panel-header-title">
-              <span class="panel-title">Student Ledger</span>
-              <span class="panel-tag status-live" id="session-decisions-count">0 Recorded</span>
-            </div>
-            <span class="panel-sub">Live Sanity Lake Sync</span>
-          </div>
-
-          <!-- Student Profile Identifier Input -->
-          <div class="student-profile-bar">
-            <div class="profile-input-header">
-              <label for="student-id-input">Active Student ID:</label>
-              <div class="profile-quick-switch">
-                <button type="button" class="quick-id-btn" data-id="student-akash-sharma">Akash</button>
-                <button type="button" class="quick-id-btn" data-id="student-priya-patel">Priya</button>
-              </div>
-            </div>
-            <input type="text" id="student-id-input" value="student-akash-sharma" spellcheck="false" autocomplete="off" placeholder="Enter student identifier">
-          </div>
-
-          <!-- Audit Trail of Decisions Committed to Sanity -->
-          <div class="audit-stream-wrapper">
-            <div class="stream-header-label">Historical Relinquishments (Sanity):</div>
-            <div id="decisions-list" class="decisions-stream">
-              <div class="empty-notice">No prior resolutions recorded for this student ID.</div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-    </main>
-
-    <!-- Formal Relinquishment / Resolution Modal -->
-    <div id="resolution-modal" class="terminal-modal-overlay hidden">
-      <div class="terminal-modal-box">
-        <div class="modal-top">
-          <span class="modal-title">Record Formal Relinquishment in Sanity Lake</span>
-          <button id="close-modal-btn" class="modal-close-btn">&times;</button>
-        </div>
-        <div class="modal-content">
-          <p class="modal-instruction">
-            Under non-stacking regulations, dual scholarship receipt triggers immediate forfeiture and clawback. Select which award the student formally retains and which is surrendered:
-          </p>
-
-          <div class="modal-fields">
-            <div class="field-block">
-              <label for="retain-scheme-select">Scholarship to Retain:</label>
-              <select id="retain-scheme-select" class="terminal-select"></select>
-            </div>
-
-            <div class="field-block">
-              <label for="surrender-scheme-select">Scholarship to Formally Surrender:</label>
-              <select id="surrender-scheme-select" class="terminal-select"></select>
-            </div>
-
-            <div class="field-block">
-              <label for="resolution-notes">Surrender Memo / Documentation Reference:</label>
-              <textarea id="resolution-notes" rows="2" class="terminal-textarea" placeholder="e.g. Formal relinquishment declaration submitted to Welfare Directorate; Ref #SW/2026/REL-401"></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-bottom">
-          <button id="cancel-modal-btn" class="btn-cancel">Cancel</button>
-          <button id="confirm-resolution-btn" class="btn-confirm">Commit Decision to Sanity Lake</button>
-        </div>
+    <!-- Center Navigation Tabs (Desktop) -->
+    <div class="navbar-center hidden lg:flex">
+      <div class="join bg-base-200/80 p-1 rounded-lg border border-base-300">
+        <button id="nav-tab-verify" class="btn btn-sm join-item btn-primary text-white font-medium px-4">
+          Award Verifier
+        </button>
+        <button id="nav-tab-ledger" class="btn btn-sm join-item btn-ghost font-medium px-4">
+          My Awards &amp; Ledger
+        </button>
+        <button id="nav-tab-directory" class="btn btn-sm join-item btn-ghost font-medium px-4">
+          Policy Directory
+        </button>
       </div>
     </div>
 
-    <!-- Terminal Footer (Fixed 26px) -->
-    <footer class="terminal-footer">
-      <div class="footer-left">
-        <span>ScholarStack &bull; Multi-Award Scholarship Compliance Engine &bull; Sanity Context MCP &bull; Google Gemini</span>
-      </div>
-      <div class="footer-right">
-        <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer">Sanity Studio</a>
-        <a href="https://github.com/Labreo/ScholarStack" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-      </div>
-    </footer>
+    <!-- Right Header Controls -->
+    <div class="navbar-end gap-2.5">
+      <!-- Live Sync Status & Portal Telemetry Trigger -->
+      <button type="button" id="telemetry-badge-btn" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-base-200 border border-base-300 text-xs hover:border-primary/50 cursor-pointer transition-colors" title="View Portal Telemetry & Ground-Truth Oracle">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="system-status-text" class="text-base-content/70 font-medium">Sanity Lake: Online</span>
+      </button>
 
-  </div>
+      <!-- Student Profile Switcher Dropdown -->
+      <div class="dropdown dropdown-end">
+        <label tabindex="0" class="btn btn-ghost btn-sm gap-2 normal-case border border-base-300 bg-base-100 hover:bg-base-200">
+          <div class="avatar placeholder">
+            <div class="bg-primary/20 text-primary rounded-full w-6 h-6 text-xs font-semibold">
+              AS
+            </div>
+          </div>
+          <span id="active-student-label" class="hidden md:inline font-medium text-xs">Akash Sharma</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </label>
+        <div tabindex="0" class="dropdown-content menu p-3 shadow-lg bg-base-100 rounded-box w-72 border border-base-300 mt-2 z-50">
+          <div class="px-2 py-1.5 border-b border-base-200 mb-2">
+            <div class="text-xs font-semibold text-base-content uppercase tracking-wider">Active Student Profile</div>
+            <div class="text-[11px] text-base-content/60">Switches compliance history &amp; ledger</div>
+          </div>
+          <ul class="space-y-1">
+            <li>
+              <button type="button" class="student-select-btn active flex items-center justify-between py-2 text-xs" data-id="student-akash-sharma" data-name="Akash Sharma">
+                <div>
+                  <div class="font-semibold text-base-content">Akash Sharma</div>
+                  <div class="text-[11px] text-base-content/60">B.Tech CS &bull; IIT Bombay</div>
+                </div>
+                <span class="badge badge-xs badge-primary">Active</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="student-select-btn flex items-center justify-between py-2 text-xs" data-id="student-priya-patel" data-name="Priya Patel">
+                <div>
+                  <div class="font-semibold text-base-content">Priya Patel</div>
+                  <div class="text-[11px] text-base-content/60">M.Sc Physics &bull; Delhi Univ</div>
+                </div>
+              </button>
+            </li>
+          </ul>
+          <div class="mt-3 pt-2 border-t border-base-200">
+            <label for="custom-student-id" class="text-[10px] text-base-content/60 uppercase font-medium">Custom Student ID</label>
+            <div class="flex gap-1.5 mt-1">
+              <input type="text" id="custom-student-id" placeholder="e.g. student-roll-104" class="input input-xs input-bordered w-full text-xs">
+              <button type="button" id="apply-custom-student" class="btn btn-xs btn-neutral">Set</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" class="btn btn-ghost btn-circle btn-sm border border-base-300" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+        <!-- Sun Icon (Dark Mode active) -->
+        <svg id="theme-sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Moon Icon (Light Mode active) -->
+        <svg id="theme-moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </button>
+
+      <!-- Sanity Studio External Link -->
+      <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm hidden sm:inline-flex text-xs gap-1 border border-base-300">
+        <span>Studio</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: AWARD VERIFICATION (Primary Daily Flow) -->
+    <!-- ========================================== -->
+    <div id="view-verify" class="space-y-6">
+      
+      <!-- Top Title & Subheading -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-base-300 pb-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-base-content">Award Compatibility &amp; Compliance Checker</h1>
+          <p class="text-sm text-base-content/70 mt-0.5">
+            Verify whether accepting a new fellowship or scholarship violates the statutory non-stacking covenants of your active awards.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge badge-neutral badge-sm font-medium text-xs">
+            <span id="verified-schemes-badge">36 Verified Policies</span>
+          </span>
+          <span class="badge badge-outline badge-sm font-medium text-xs text-base-content/60">
+            Sanity Content Lake
+          </span>
+        </div>
+      </div>
+
+      <!-- Verification Input Card -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-5 sm:p-6 space-y-5">
+
+          <!-- Dual Award Selector Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+            
+            <!-- Scheme A (Current Award) -->
+            <div class="md:col-span-5 space-y-1.5">
+              <label for="select-scheme-a" class="block text-xs font-semibold uppercase tracking-wider text-base-content/80">
+                1. Active Scholarship / Current Award
+              </label>
+              <select id="select-scheme-a" class="select select-bordered select-md w-full bg-base-100 font-medium text-sm focus:border-primary">
+                <option value="">-- Choose active award from directory --</option>
+              </select>
+              <p class="text-[11px] text-base-content/50">The fellowship or scholarship currently disbursed to the student</p>
+            </div>
+
+            <!-- Swap Awards Button -->
+            <div class="md:col-span-1 flex justify-center py-1 md:py-0">
+              <button type="button" id="swap-awards-btn" class="btn btn-circle btn-sm btn-ghost border border-base-300 hover:bg-base-200" title="Swap Awards">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Scheme B (Prospective Award) -->
+            <div class="md:col-span-5 space-y-1.5">
+              <label for="select-scheme-b" class="block text-xs font-semibold uppercase tracking-wider text-base-content/80">
+                2. Prospective / Secondary Award
+              </label>
+              <select id="select-scheme-b" class="select select-bordered select-md w-full bg-base-100 font-medium text-sm focus:border-primary">
+                <option value="">-- Choose prospective award to evaluate --</option>
+              </select>
+              <p class="text-[11px] text-base-content/50">The second award being considered or offered</p>
+            </div>
+
+          </div>
+
+          <!-- Specific Inquiry / Circumstances Box -->
+          <div class="space-y-1.5 pt-2 border-t border-base-200">
+            <div class="flex items-center justify-between">
+              <label for="question-input" class="block text-xs font-semibold uppercase tracking-wider text-base-content/80">
+                Inquiry Query or Specific Details
+              </label>
+              <span class="text-[11px] text-base-content/50">Auto-generated from awards or type custom context</span>
+            </div>
+            <textarea 
+              id="question-input" 
+              rows="2" 
+              class="textarea textarea-bordered w-full text-sm leading-relaxed focus:border-primary placeholder:text-base-content/40" 
+              placeholder="e.g. I am currently receiving the Goa Home Nursing Stipend Scheme. Am I legally permitted to also accept the Samsung Star Scholar Award?"></textarea>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <div class="text-xs text-base-content/60 flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Evaluates gazette notifications, Section 4 audit records &amp; CSR covenants.</span>
+            </div>
+            
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button type="button" id="clear-form-btn" class="btn btn-ghost btn-sm text-xs font-medium">
+                Reset
+              </button>
+              <button type="button" id="submit-verify-btn" class="btn btn-primary btn-md px-6 text-white font-semibold shadow-sm hover:shadow gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Verify Compatibility</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Loading State Indicator -->
+      <div id="verify-loading" class="hidden">
+        <div class="card bg-base-100 border border-base-300 p-8 text-center space-y-3 shadow-sm rounded-xl">
+          <div class="flex justify-center">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+          <div class="font-semibold text-base text-base-content">Analyzing Regulatory Non-Stacking Covenants</div>
+          <div class="text-xs text-base-content/60 max-w-md mx-auto">
+            Querying Sanity Content Lake via Context MCP, resolving statutory clauses and checking historical student relinquishments...
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Container -->
+      <div id="result-container" class="space-y-5">
+        
+        <!-- Default Ready State (Clean Institutional Overview) -->
+        <div class="card bg-base-100 border border-base-300 shadow-sm rounded-xl p-6 md:p-8">
+          <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
+              Standard Compliance Engine
+            </div>
+            <h2 class="text-xl font-bold text-base-content tracking-tight">Institutional Award Compatibility Verification</h2>
+            <p class="text-sm text-base-content/70 mt-1 leading-relaxed">
+              Select two scholarship schemes above to automatically inspect statutory anti-stacking covenants, gazette publications, and CSR agreements stored in Sanity. The engine detects legal conflicts before funds are accepted.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-base-200">
+            <div class="p-4 rounded-lg bg-base-200/50 border border-base-300 space-y-2">
+              <div class="w-8 h-8 rounded-md bg-base-100 border border-base-300 flex items-center justify-center text-primary font-bold text-sm">
+                01
+              </div>
+              <div class="font-semibold text-sm text-base-content">Statutory Covenants</div>
+              <div class="text-xs text-base-content/60 leading-relaxed">
+                Directly quotes verbatim anti-stacking restrictions and gazette notifications indexed in Sanity.
+              </div>
+            </div>
+
+            <div class="p-4 rounded-lg bg-base-200/50 border border-base-300 space-y-2">
+              <div class="w-8 h-8 rounded-md bg-base-100 border border-base-300 flex items-center justify-center text-primary font-bold text-sm">
+                02
+              </div>
+              <div class="font-semibold text-sm text-base-content">Penalty Enforcement</div>
+              <div class="text-xs text-base-content/60 leading-relaxed">
+                Identifies whether dual receipt triggers mandatory clawback, penal interest, or award revocation.
+              </div>
+            </div>
+
+            <div class="p-4 rounded-lg bg-base-200/50 border border-base-300 space-y-2">
+              <div class="w-8 h-8 rounded-md bg-base-100 border border-base-300 flex items-center justify-center text-primary font-bold text-sm">
+                03
+              </div>
+              <div class="font-semibold text-sm text-base-content">Administrative Ledger</div>
+              <div class="text-xs text-base-content/60 leading-relaxed">
+                Records formal student award relinquishments into Sanity Content Lake to govern all subsequent audits.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: MY AWARDS & COMPLIANCE LEDGER -->
+    <!-- ========================================== -->
+    <div id="view-ledger" class="space-y-6 hidden">
+      
+      <!-- Ledger Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-base-300 pb-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-base-content">Student Financial Aid &amp; Relinquishment Ledger</h1>
+          <p class="text-sm text-base-content/70 mt-0.5">
+            Verified institutional record of active awards and formal surrender declarations stored in Sanity Lake.
+          </p>
+        </div>
+        <div>
+          <button type="button" id="open-surrender-modal-direct-btn" class="btn btn-primary btn-sm text-white font-medium gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Record Relinquishment</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Student Profile Overview Card -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm rounded-xl p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-xl w-12 h-12 font-bold text-lg">
+                AS
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="ledger-student-name" class="font-bold text-base text-base-content">Akash Sharma</span>
+                <span class="badge badge-success badge-sm text-[10px] font-semibold text-white">Active Student</span>
+              </div>
+              <div class="text-xs text-base-content/60 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>Student ID: <code id="ledger-student-id" class="text-primary font-mono">student-akash-sharma</code></span>
+                <span>&bull;</span>
+                <span>Institution: Indian Institute of Technology Bombay</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-base-200">
+            <div class="text-right">
+              <div class="text-[11px] text-base-content/60 uppercase font-semibold">Sanity Lake Ledger</div>
+              <div id="ledger-record-count" class="text-lg font-bold text-base-content">0 Records</div>
+            </div>
+            <button type="button" id="refresh-ledger-btn" class="btn btn-square btn-sm btn-ghost border border-base-300" title="Refresh Audit Trail">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Table / Feed -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-base-200 flex items-center justify-between">
+          <div class="font-semibold text-sm text-base-content">Formal Relinquishment Audit History</div>
+          <div class="text-xs text-base-content/60">Synchronized directly with Sanity Content Lake</div>
+        </div>
+        
+        <div id="decisions-list" class="divide-y divide-base-200">
+          <!-- Loaded dynamically from /api/student/:id/history -->
+          <div class="p-8 text-center text-xs text-base-content/60">
+            Loading student records from Sanity Content Lake...
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: SCHOLARSHIP DIRECTORY -->
+    <!-- ========================================== -->
+    <div id="view-directory" class="space-y-6 hidden">
+      
+      <!-- Directory Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-base-300 pb-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-base-content">Scholarship &amp; Regulatory Policy Directory</h1>
+          <p class="text-sm text-base-content/70 mt-0.5">
+            Explore 36 verified state, central government, and corporate scholarship policies, maximum benefits, and statutory covenants.
+          </p>
+        </div>
+        <div class="text-xs text-base-content/60">
+          Source: Official Directorate Gazettes &amp; Guidelines
+        </div>
+      </div>
+
+      <!-- Search & Category Filters -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm rounded-xl p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          
+          <!-- Search Input -->
+          <div class="relative w-full sm:flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              id="directory-search-input" 
+              placeholder="Search by scholarship title, funding body, or statutory clause keywords..." 
+              class="input input-bordered input-sm w-full pl-9 text-xs focus:border-primary">
+          </div>
+
+          <!-- Category Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+            <button type="button" class="dir-filter-pill active btn btn-xs btn-primary font-medium" data-cat="all">
+              All Schemes (<span id="dir-all-count">36</span>)
+            </button>
+            <button type="button" class="dir-filter-pill btn btn-xs btn-ghost border border-base-300 font-medium" data-cat="State">
+              State Govt
+            </button>
+            <button type="button" class="dir-filter-pill btn btn-xs btn-ghost border border-base-300 font-medium" data-cat="Central">
+              Central Govt
+            </button>
+            <button type="button" class="dir-filter-pill btn btn-xs btn-ghost border border-base-300 font-medium" data-cat="Corporate">
+              Corporate / CSR
+            </button>
+            <button type="button" class="dir-filter-pill btn btn-xs btn-ghost border border-base-300 font-medium" data-cat="Institutional">
+              Institutional
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Directory Cards Grid -->
+      <div id="directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically from /api/schemes -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: RECORD FORMAL RELINQUISHMENT IN SANITY -->
+  <!-- ========================================== -->
+  <dialog id="resolution_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-lg bg-base-100 border border-base-300 p-6 space-y-4">
+      
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-bold text-lg text-base-content">Record Formal Award Relinquishment</h3>
+          <p class="text-xs text-base-content/60 mt-0.5">Commits official resolution into Sanity Content Lake</p>
+        </div>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+
+      <div class="p-3 rounded-lg bg-warning/10 border border-warning/30 text-xs text-warning-content leading-relaxed">
+        <strong>Statutory Notice:</strong> Under non-stacking covenants, dual scholarship receipt triggers immediate forfeiture and clawback. Select which award the student formally retains and which is surrendered to update the institutional compliance record.
+      </div>
+
+      <div class="space-y-3.5">
+        
+        <!-- Student Identifier Field -->
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-base-content/70">Student Identifier</label>
+          <input type="text" id="modal-student-id" readonly class="input input-bordered input-sm w-full bg-base-200 font-mono text-xs text-base-content/80">
+        </div>
+
+        <!-- Scholarship to Retain -->
+        <div class="space-y-1">
+          <label for="retain-scheme-select" class="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
+            1. Scholarship to Retain
+          </label>
+          <select id="retain-scheme-select" class="select select-bordered select-sm w-full font-medium text-xs">
+            <!-- Populated dynamically -->
+          </select>
+          <span class="text-[10px] text-base-content/50">This award remains active on the student's aid file</span>
+        </div>
+
+        <!-- Scholarship to Surrender -->
+        <div class="space-y-1">
+          <label for="surrender-scheme-select" class="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
+            2. Scholarship to Formally Surrender
+          </label>
+          <select id="surrender-scheme-select" class="select select-bordered select-sm w-full font-medium text-xs">
+            <!-- Populated dynamically -->
+          </select>
+          <span class="text-[10px] text-base-content/50">Relinquished in favor of the retained scholarship</span>
+        </div>
+
+        <!-- Reference / Surrender Memo -->
+        <div class="space-y-1">
+          <label for="resolution-notes" class="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
+            Surrender Memo / Departmental Order Ref
+          </label>
+          <textarea 
+            id="resolution-notes" 
+            rows="2" 
+            class="textarea textarea-bordered w-full text-xs placeholder:text-base-content/40" 
+            placeholder="e.g. Formal relinquishment declaration submitted to Directorate of Higher Education; Ref #SW/2026/REL-401"></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-action pt-2 border-t border-base-200">
+        <form method="dialog">
+          <button class="btn btn-sm btn-ghost font-medium">Cancel</button>
+        </form>
+        <button type="button" id="confirm-resolution-btn" class="btn btn-sm btn-primary text-white font-semibold">
+          Commit Record to Sanity Lake
+        </button>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INSTITUTIONAL SYSTEM TELEMETRY -->
+  <!-- ========================================== -->
+  <dialog id="telemetry_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-xl bg-base-100 border border-base-300 p-6 space-y-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-bold text-lg text-base-content flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Portal Telemetry &amp; Verification Oracle</span>
+          </h3>
+          <p class="text-xs text-base-content/60 mt-0.5">Live operational telemetry across Sanity Content Lake &amp; Context MCP</p>
+        </div>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+
+      <div id="telemetry-loading" class="py-6 text-center text-xs text-base-content/60 space-y-2">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+        <div>Querying /health/deep diagnostics...</div>
+      </div>
+
+      <div id="telemetry-content" class="space-y-4 hidden text-xs">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg bg-base-200/60 border border-base-300 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-base-content/50">Sanity Content Lake</div>
+            <div id="tel-lake-status" class="font-bold text-sm text-success">Operational</div>
+            <div class="text-[11px] text-base-content/70">Project: <span class="font-mono">axvnim0k</span> (<span id="tel-schemes-count">36</span> policies)</div>
+          </div>
+
+          <div class="p-3 rounded-lg bg-base-200/60 border border-base-300 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-base-content/50">Context MCP Endpoint</div>
+            <div id="tel-mcp-status" class="font-bold text-sm text-success">Connected</div>
+            <div class="text-[11px] text-base-content/70"><span id="tel-tools-count">4</span> MCP Tools Registered</div>
+          </div>
+
+          <div class="p-3 rounded-lg bg-base-200/60 border border-base-300 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-base-content/50">Verification Oracle</div>
+            <div class="font-bold text-sm text-primary">Deterministic Ground Truth</div>
+            <div class="text-[11px] text-base-content/70">Zero-Hallucination Gate Active</div>
+          </div>
+
+          <div class="p-3 rounded-lg bg-base-200/60 border border-base-300 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-base-content/50">Model &amp; Round-trip Latency</div>
+            <div id="tel-latency" class="font-bold text-sm text-base-content">-- ms</div>
+            <div class="text-[11px] text-base-content/70">Google Gemini 2.5 Flash</div>
+          </div>
+        </div>
+
+        <!-- MCP Tools List -->
+        <div class="p-3 rounded-lg bg-base-200/40 border border-base-300 space-y-1.5">
+          <div class="font-semibold text-[11px] uppercase tracking-wider text-base-content/70">Registered Context MCP Tools</div>
+          <div class="flex flex-wrap gap-1.5" id="tel-tools-list">
+            <span class="badge badge-sm badge-neutral font-mono text-[10px]">initial_context</span>
+            <span class="badge badge-sm badge-neutral font-mono text-[10px]">groq_query</span>
+            <span class="badge badge-sm badge-neutral font-mono text-[10px]">schema_explorer</span>
+            <span class="badge badge-sm badge-neutral font-mono text-[10px]">array_field_reader</span>
+          </div>
+        </div>
+
+        <!-- Raw Link -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] text-base-content/60">Live diagnostic endpoint: <code class="text-primary">/health/deep</code></span>
+          <a href="/health/deep" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline btn-ghost gap-1">
+            <span>Raw JSON</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="modal-action pt-2 border-t border-base-200">
+        <form method="dialog">
+          <button class="btn btn-sm btn-ghost font-medium">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================== -->
+  <!-- MODAL: COMPLIANCE AUDIT DOSSIER & CERTIFICATE -->
+  <!-- ========================================== -->
+  <dialog id="dossier_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-2xl bg-base-100 border border-base-300 p-6 sm:p-8 space-y-5">
+      
+      <!-- Modal Header (Screen Only) -->
+      <div class="flex items-start justify-between border-b border-base-200 pb-3">
+        <div>
+          <h3 class="font-bold text-lg text-base-content">Scholarship Compliance Audit Dossier</h3>
+          <p class="text-xs text-base-content/60">Formal statutory evaluation record grounded in Sanity Content Lake</p>
+        </div>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+
+      <!-- Printable Certificate Body -->
+      <div id="dossier-printable-area" class="space-y-4 text-xs">
+        
+        <!-- Institutional Certificate Header -->
+        <div class="text-center pb-3 border-b-2 border-primary/40 space-y-1">
+          <div class="text-[10px] tracking-widest uppercase font-bold text-primary">OFFICIAL COMPLIANCE VERIFICATION RECORD</div>
+          <div class="text-base font-bold text-base-content tracking-tight">Institutional Multi-Award Stacking Audit</div>
+          <div class="text-[11px] text-base-content/60 font-mono">Dossier Ref: <span id="dossier-ref-code">#SCH-AUDIT-2026-0001</span> &bull; Issued: <span id="dossier-date">--</span></div>
+        </div>
+
+        <!-- Student & Award Identification Table -->
+        <div class="grid grid-cols-2 gap-3 p-3 bg-base-200/50 rounded-lg border border-base-300">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-base-content/50 block">Beneficiary Name</span>
+            <span id="dossier-student-name" class="font-semibold text-base-content text-xs">--</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-base-content/50 block">Student Identifier</span>
+            <span id="dossier-student-id" class="font-mono text-base-content text-xs">--</span>
+          </div>
+          <div class="col-span-2">
+            <span class="text-[10px] uppercase font-bold text-base-content/50 block">Registered Institution</span>
+            <span id="dossier-student-inst" class="font-medium text-base-content text-xs">--</span>
+          </div>
+        </div>
+
+        <!-- Compliance Verdict Banner -->
+        <div id="dossier-verdict-box" class="p-3.5 rounded-lg border text-xs space-y-1">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Statutory Clauses Cited -->
+        <div class="space-y-2">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-base-content/80">
+            Statutory Covenants Cited from Sanity Content Lake
+          </div>
+          <div id="dossier-clauses-list" class="space-y-2">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Ground-Truth Seal & Legal Disclaimer -->
+        <div class="pt-3 border-t border-base-300 text-[10px] text-base-content/60 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+          <div>
+            <div><strong>Verification Oracle:</strong> Sanity Content Lake (Project axvnim0k)</div>
+            <div><strong>Regulatory Scope:</strong> Central Ministries, State Directorates &amp; Corporate CSR</div>
+          </div>
+          <div class="text-right font-mono text-[9px] text-base-content/40 uppercase">
+            Grounded &bull; Non-Stacking Gate Verified
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Action Buttons (Screen Only) -->
+      <div class="modal-action pt-3 border-t border-base-200 flex justify-between items-center">
+        <form method="dialog">
+          <button class="btn btn-sm btn-ghost font-medium">Close</button>
+        </form>
+        <div class="flex gap-2">
+          <button type="button" id="print-dossier-btn" class="btn btn-sm btn-primary text-white font-semibold gap-1.5 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Print Dossier / Save PDF</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- Institutional Footer -->
+  <footer class="footer items-center p-4 bg-base-100 border-t border-base-300 text-base-content text-xs mt-auto">
+    <div class="items-center grid-flow-col gap-2 max-w-7xl mx-auto w-full flex flex-col sm:flex-row justify-between">
+      <div class="flex items-center gap-2">
+        <span class="font-bold">ScholarStack</span>
+        <span class="text-base-content/40">&bull;</span>
+        <span class="text-base-content/60">Institutional Scholarship Non-Stacking &amp; Compliance Portal</span>
+      </div>
+      <div class="flex items-center gap-4 text-base-content/60">
+        <a href="https://scholarstack-rules.sanity.studio" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">Sanity Studio</a>
+        <span>&bull;</span>
+        <span>Google Gemini &amp; Sanity Context MCP</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="/app.js"></script>
 </body>

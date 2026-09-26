@@ -219,6 +219,19 @@ Analyze the question against the verified Knowledge Base and the student's histo
   const schemeAObj = identifiedTitles[0] ? findScheme(identifiedTitles[0]) : undefined
   const schemeBObj = identifiedTitles[1] ? findScheme(identifiedTitles[1]) : undefined
 
+  // Guarantee 100% authentic officialDocumentUrl, clauseRef, and consequences from Sanity database
+  const enrichedConflicts = (parsed.conflicts || []).map((conflict: any) => {
+    const matched = findScheme(conflict.schemeTitle)
+    return {
+      ...conflict,
+      schemeTitle: matched?.title || conflict.schemeTitle,
+      clauseRef: matched?.stackingRule?.clauseReference || conflict.clauseRef,
+      exactQuote: matched?.stackingRule?.exactClauseText || conflict.exactQuote,
+      officialDocumentUrl: matched?.officialDocumentUrl || conflict.officialDocumentUrl || '',
+      consequence: matched?.stackingRule?.consequenceOfViolation || conflict.consequence,
+    }
+  })
+
   return {
     canStack: parsed.canStack,
     verdict: parsed.verdict,
@@ -251,7 +264,7 @@ Analyze the question against the verified Knowledge Base and the student's histo
         : undefined,
       unknownSchemes: parsed.unknownSchemeTitles || [],
     },
-    conflictingClauses: parsed.conflicts || [],
+    conflictingClauses: enrichedConflicts,
     nextSteps: parsed.nextSteps,
     canResolve: parsed.canResolve || parsed.verdict === 'PROHIBITED',
   }

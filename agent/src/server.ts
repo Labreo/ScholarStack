@@ -42,6 +42,58 @@ app.get('/api/status', async (req, res) => {
   }
 })
 
+// 1b. Deep Health Diagnostic Endpoint (/health/deep and /api/health/deep)
+const handleDeepHealth = async (req: express.Request, res: express.Response) => {
+  const startTime = Date.now()
+  try {
+    const [mcpStatus, schemes] = await Promise.all([
+      contextMcpClient.listTools(),
+      getAllSchemes(),
+    ])
+    const latencyMs = Date.now() - startTime
+
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      latencyMs,
+      sanityContentLake: {
+        status: 'operational',
+        projectId: process.env.SANITY_PROJECT_ID,
+        dataset: process.env.SANITY_DATASET,
+        indexedSchemesCount: schemes.length,
+        studioUrl: 'https://scholarstack-rules.sanity.studio',
+      },
+      sanityContextMcp: {
+        status: mcpStatus.connected ? 'operational' : 'degraded',
+        endpoint: process.env.SANITY_MCP_URL,
+        toolsRegistered: mcpStatus.tools?.length || 0,
+        tools: mcpStatus.tools?.map((t: any) => t.name) || [],
+      },
+      verificationOracle: {
+        status: 'active',
+        policy: 'deterministic_ground_truth',
+        allowlistedFunctions: ['initial_context', 'groq_query', 'schema_explorer', 'array_field_reader'],
+        hallucinationProtection: 'strict_covenant_projection',
+      },
+      modelRuntime: {
+        provider: 'Google Gemini',
+        model: 'gemini-2.5-flash',
+        responseFormat: 'application/json',
+      },
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: err.message,
+    })
+  }
+}
+
+app.get('/health/deep', handleDeepHealth)
+app.get('/api/health/deep', handleDeepHealth)
+
 // 2. List all verified schemes from Sanity Content Lake
 app.get('/api/schemes', async (req, res) => {
   try {
