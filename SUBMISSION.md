@@ -1,14 +1,10 @@
 *This is a submission for the [Sanity Challenge, Path One: Ship an Agent That Queries Real Content](https://dev.to/challenges/sanity-2026-09-16)*
 
+## What I Built
+
 ![ScholarStack Cover](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_coverimage.png)
 
-# ScholarStack: Resolving Multi-Award Scholarship Conflicts via Sanity Context MCP & Gemini
-
-> "Over 40 million university students navigate un-federated scholarship gazettes. Accepting a second award to cover hostel or tuition fees can trigger automated audit flags, demand notices for immediate legal clawback, and permanent disqualification. ScholarStack delivers an authoritative compliance engine where Sanity Content Lake serves as the single source of truth."
-
----
-
-## What I Built
+Over 40 million university students navigate un-federated scholarship gazettes. Accepting a second award to cover hostel or tuition fees can trigger automated audit flags, demand notices for immediate legal clawback, and permanent disqualification. ScholarStack delivers an authoritative compliance engine where Sanity Content Lake serves as the single source of truth.
 
 Higher education scholarships in India carry strict legal covenants buried inside official gazettes and program charters. Central ministries, state welfare directorates, and corporate foundations insert statutory terms that forbid students from receiving concurrent financial aid.
 
@@ -354,14 +350,108 @@ When two scholarship rulebooks contradict each other by barring concurrent award
 
 {% agent_session gemini-cli-session-mvqzxm %}
 
-The complete development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—has been curated and published on DEV:
+The development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—is published and embedded above.
 
-- **Interactive DEV Session**: `{% agent_session gemini-cli-session-mvqzxm %}`
+- **Interactive DEV Embed**: `{% agent_session gemini-cli-session-mvqzxm %}`
 - **Session Files in Repository**:
   - [scholarstack_agent_session.json](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.json) (Gemini CLI format)
   - [scholarstack_agent_session.jsonl](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.jsonl) (Claude Code / Codex format)
 
-### Curated Session Milestones
+---
+
+### Curated Session Slices
+
+The full transcript comprises 288 turns. Below are the key agent reasoning slices that demonstrate Sanity Context MCP execution and bidirectional state management:
+
+#### Slice 1: Contradiction Detection & Direct Conflict Trap
+*Evaluating Goa Home Nursing vs. Samsung Star Scholar*
+
+```json
+// Student Inquiry: "Can I receive Goa Home Nursing while holding Samsung Star Scholar?"
+// Agent Step: Context MCP executes groq_query projection
+{
+  "tool": "groq_query",
+  "query": "*[_type == 'scholarshipScheme' && _id in ['goa-home-nursing', 'samsung-star-scholar']]{title, authority, stackingRule, officialDocumentUrl}"
+}
+
+// Agent Output: Both statutory covenants surfaced side by side with citations
+{
+  "verdict": "PROHIBITED",
+  "clauses": [
+    {
+      "scheme": "Directorate of Social Welfare Goa - Home Nursing Stipend",
+      "clause": "Clause 7(b): Beneficiary shall not draw stipend or financial assistance from any other source for the same course.",
+      "penalty": "Immediate cancellation and revenue recovery."
+    },
+    {
+      "scheme": "Samsung Star Scholar CSR Program",
+      "clause": "Section 4.3: Scholars may not accept concurrent external scholarships without prior written sanction.",
+      "penalty": "Revocation of scholarship grant."
+    }
+  ]
+}
+```
+
+#### Slice 2: Closing the Loop (Bidirectional Write-Back to Sanity)
+*Executing student surrender declaration*
+
+```typescript
+// Student executes "Record Relinquishment" directly in the portal
+// Express backend commits document to Sanity Content Lake via @sanity/client
+const doc = await sanityClient.create({
+  _type: 'studentDecision',
+  studentId: 'student_goa_001',
+  retainedScheme: {_type: 'reference', _ref: 'samsung-star-scholar'},
+  surrenderedScheme: {_type: 'reference', _ref: 'goa-home-nursing'},
+  resolvedAt: new Date().toISOString(),
+  resolutionStatus: 'SURRENDERED',
+  notes: 'Student formally relinquished Goa Home Nursing in favor of Samsung Star Scholar.'
+})
+// Sanity Lake commits document with immutable ID: decision-goa-samsung-7782
+```
+
+#### Slice 3: State Carryover Across Follow-Up Evaluations
+*Evaluating FTII Student Scholarship alongside retained Samsung Star Scholar*
+
+```json
+// Student Follow-up: "I surrendered Goa. Can I accept FTII alongside Samsung?"
+// Agent Step: Queries active relinquishments from Sanity Lake
+{
+  "tool": "groq_query",
+  "query": "*[_type == 'studentDecision' && studentId == 'student_goa_001' && resolutionStatus == 'SURRENDERED'].surrenderedScheme._ref"
+}
+// Returns: ['goa-home-nursing']
+
+// Agent Verdict: Recognizes Goa as legally surrendered. Evaluates FTII vs Samsung only.
+{
+  "verdict": "PERMITTED",
+  "finding": "Goa award was verified as legally surrendered. FTII Regulation 4.2 permits concurrent awards from corporate CSR programs. Samsung Star Scholar approved alongside FTII Student Scholarship.",
+  "flags": 0
+}
+```
+
+#### Slice 4: Live Telemetry & Verification Oracle (<700ms SLA)
+*Verifying live operational telemetry across Sanity Content Lake and registered Context MCP tools*
+
+```json
+// GET /health/deep execution
+{
+  "status": "operational",
+  "latencyMs": 409,
+  "indexedPolicies": 36,
+  "sanityLake": "connected",
+  "activeMcpTools": [
+    "initial_context",
+    "groq_query",
+    "schema_explorer",
+    "array_field_reader"
+  ]
+}
+```
+
+---
+
+### Curated Milestones Summary
 
 | Session Phase | Agent Operations & Tools | Outcome |
 | :--- | :--- | :--- |
@@ -371,7 +461,3 @@ The complete development transcript for this agent session—covering Sanity Stu
 | **4. Gemini Reasoning Engine** | Configured Gemini 2.5 Flash reasoning with grounding against retrieved Sanity covenants. | Eliminated model hallucinations; enforced strict citations and side-by-side covenant comparisons. |
 | **5. Closing the Loop** | Implemented `/api/resolve` mutation endpoint committing `studentDecision` documents to Sanity. | Recorded student relinquishments permanently in Sanity Lake, updating subsequent eligibility evaluations. |
 | **6. Institutional Interface** | Refined portal layout, added live `/health/deep` telemetry oracle, and printable compliance dossiers. | Delivered an audit-grade interface with sub-700ms verified responses and zero broken government links. |
-
----
-
-*ScholarStack was built for the Sanity Challenge: Path One. Designed to turn complex legal rulebooks into structured, verifiable guarantees for students.*
