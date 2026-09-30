@@ -4,11 +4,15 @@
 
 @layer base {
   body {
-    @apply antialiased text-base-content bg-base-200 min-h-screen font-sans;
+    @apply antialiased text-base-content bg-base-200 min-h-screen font-body;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
   }
 }
 
-/* Custom scrollbars */
+/* Custom subtle scrollbars & glows */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -24,6 +28,36 @@
   background: rgba(148, 163, 184, 0.45);
 }
 
+/* Glow effects matching Stitch UI */
+.glow-primary {
+  box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.25);
+}
+.glow-crimson {
+  box-shadow: 0 0 30px -5px rgba(239, 68, 68, 0.25);
+}
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+}
+.glow-accent {
+  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+}
+
+.laser-border {
+  background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.8) 50%, rgba(59,130,246,0) 100%);
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
 /* Smooth transitions for interactive elements */
 .transition-smooth {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -31,7 +65,7 @@
 
 /* Focus outline refinements */
 *:focus-visible {
-  outline: 2px solid theme('colors.primary.DEFAULT', #2563eb);
+  outline: 2px solid theme('colors.primary', #3b82f6);
   outline-offset: 2px;
 }
 
@@ -55,7 +89,7 @@
     width: 100% !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 20px !important;
+    padding: 24px !important;
     background: #ffffff !important;
     color: #0f172a !important;
   }

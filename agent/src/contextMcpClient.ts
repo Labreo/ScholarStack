@@ -28,10 +28,19 @@ export class SanityContextMCPClient {
     this.token = authToken || ''
   }
 
+  private cachedTools: {connected: boolean; tools: ContextMCPTool[]; message?: string} | null = null
+  private toolsCacheTime = 0
+  private static readonly TOOLS_CACHE_TTL = 30 * 1000
+
   /**
    * Ping / List tools from the live Context MCP server
    */
   async listTools(): Promise<{connected: boolean; tools: ContextMCPTool[]; message?: string}> {
+    const now = Date.now()
+    if (this.cachedTools && (now - this.toolsCacheTime < SanityContextMCPClient.TOOLS_CACHE_TTL)) {
+      return this.cachedTools
+    }
+
     try {
       const response = await fetch(this.endpoint, {
         method: 'POST',
@@ -49,10 +58,13 @@ export class SanityContextMCPClient {
 
       const data = await response.json()
       if (data.result && data.result.tools) {
-        return {
+        const result = {
           connected: true,
           tools: data.result.tools,
         }
+        this.cachedTools = result
+        this.toolsCacheTime = now
+        return result
       }
 
       if (data.error) {
@@ -65,6 +77,7 @@ export class SanityContextMCPClient {
 
       return {connected: false, tools: []}
     } catch (err: any) {
+      if (this.cachedTools) return this.cachedTools
       return {
         connected: false,
         tools: [],

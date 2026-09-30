@@ -49,13 +49,32 @@ export interface StudentDecision {
   decisionNotes: string
 }
 
+let cachedSchemes: ScholarshipScheme[] | null = null
+let schemesCacheTime = 0
+const SCHEMES_CACHE_TTL = 60 * 1000
+
 /**
  * Fetch all verified scholarship schemes from Sanity Content Lake
  */
 export async function getAllSchemes(): Promise<ScholarshipScheme[]> {
-  return await sanityClient.fetch<ScholarshipScheme[]>(
-    `*[_type == "scholarshipScheme"] | order(title asc)`
-  )
+  const now = Date.now()
+  if (cachedSchemes && (now - schemesCacheTime < SCHEMES_CACHE_TTL)) {
+    return cachedSchemes
+  }
+  try {
+    const schemes = await sanityClient.fetch<ScholarshipScheme[]>(
+      `*[_type == "scholarshipScheme"] | order(title asc)`
+    )
+    if (schemes && schemes.length > 0) {
+      cachedSchemes = schemes
+      schemesCacheTime = now
+      return schemes
+    }
+    return cachedSchemes || []
+  } catch (err) {
+    if (cachedSchemes) return cachedSchemes
+    throw err
+  }
 }
 
 /**

@@ -104,8 +104,9 @@ temp/
 *.bak
 
 # Local contest submission draft & video demo scripts
-SUBMISSION.md
-DEMO_SCRIPT.md
+# (Tracked for judges)
+!SUBMISSION.md
+!DEMO_SCRIPT.md
 VIDEO_WALKTHROUGH.md
 
 # Video media recordings
