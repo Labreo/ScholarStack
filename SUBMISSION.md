@@ -100,6 +100,8 @@ An evaluation pipeline that projects verified gazette clauses and official PDF l
 
 ## Code
 
+{% github Labreo/ScholarStack %}
+
 - **GitHub Repository**: [https://github.com/Labreo/ScholarStack](https://github.com/Labreo/ScholarStack)
 
 ### Project Structure & File Organization
@@ -348,12 +350,7 @@ When two scholarship rulebooks contradict each other by barring concurrent award
 
 ## Agent Session
 
-{% agent_session gemini-cli-session-mvqzxm %}
+{% agent_session gemini-cli-session-oiv8ju %}
 
 The development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—is published and embedded above.
-
-- **Interactive DEV Embed**: `{% agent_session gemini-cli-session-mvqzxm %}`
-- **Session Files in Repository**:
-  - [scholarstack_agent_session.json](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.json) (Gemini CLI format)
-  - [scholarstack_agent_session.jsonl](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.jsonl) (Claude Code / Codex format)
 
