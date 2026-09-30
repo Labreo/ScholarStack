@@ -1,6 +1,6 @@
 *This is a submission for the [Sanity Challenge, Path One: Ship an Agent That Queries Real Content](https://dev.to/challenges/sanity-2026-09-16)*
 
-![ScholarStack Cover](docs/images/scholarstack_coverimage.png)
+![ScholarStack Cover](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_coverimage.png)
 
 # ScholarStack: Resolving Multi-Award Scholarship Conflicts via Sanity Context MCP & Gemini
 
@@ -19,7 +19,7 @@ Under state revenue codes and central welfare guidelines, violating these covena
 
 University students frequently hold multiple merit offers without knowing whether concurrent funding is lawful. Compliance verification still relies on forty-page government gazettes distributed across dozens of disconnected departmental portals.
 
-![ScholarStack Compliance Workspace](docs/images/scholarstack_hero_preview.jpg)
+![ScholarStack Compliance Workspace](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_hero_preview.jpg)
 
 **ScholarStack** is an automated multi-award scholarship compliance and non-stacking rulebook verification engine. Powered by **Sanity Content Lake** and **Sanity Context MCP**, it treats official scholarship rulebooks, exact legal clauses, and student decision histories as structured content.
 
@@ -76,15 +76,15 @@ An evaluation pipeline that projects verified gazette clauses and official PDF l
 
 ### Live Portal & Telemetry Visuals
 
-![Live Telemetry and Verification Oracle Modal](docs/images/scholarstack_telemetry_modal.png)
+![Live Telemetry and Verification Oracle Modal](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_telemetry_modal.png)
 
 *The Portal Telemetry & Verification Oracle modal reveals live operational metrics across Sanity Content Lake and Context MCP tools.*
 
-![Stateful Relinquishment Ledger](docs/images/scholarstack_ledger_view.png)
+![Stateful Relinquishment Ledger](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_ledger_view.png)
 
 *The Student Relinquishment Ledger tracks committed `studentDecision` documents, updating live without page reloads.*
 
-![Indexed Policy Directory](docs/images/scholarstack_policy_directory.png)
+![Indexed Policy Directory](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_policy_directory.png)
 
 *The Policy Directory displays 36 indexed scholarship schemes categorized across Central, State, Corporate CSR, and Autonomous Institute jurisdictions.*
 
@@ -141,7 +141,7 @@ ScholarStack/
 
 ### Data Flow Diagram
 
-![ScholarStack Platform Flow](docs/images/scholarstack_architecture_flow.jpg)
+![ScholarStack Platform Flow](https://raw.githubusercontent.com/Labreo/ScholarStack/main/docs/images/scholarstack_architecture_flow.jpg)
 
 ```mermaid
 sequenceDiagram
@@ -355,8 +355,8 @@ When two scholarship rulebooks contradict each other by barring concurrent award
 The complete development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—has been exported and sanitized:
 
 - **Session Files in Repository**:
-  - [`scholarstack_agent_session.json`](scholarstack_agent_session.json) (Ready for Gemini CLI format)
-  - [`scholarstack_agent_session.jsonl`](scholarstack_agent_session.jsonl) (Ready for Claude Code / Codex format)
+  - [scholarstack_agent_session.json](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.json) (Ready for Gemini CLI format)
+  - [scholarstack_agent_session.jsonl](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.jsonl) (Ready for Claude Code / Codex format)
 - **Live DEV Agent Session**: [Curate and View on DEV Agent Sessions](https://dev.to/agent_sessions/new)
 
 <!-- After uploading scholarstack_agent_session.json to https://dev.to/agent_sessions/new, paste the embed tag below: -->
