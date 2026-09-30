@@ -352,15 +352,14 @@ When two scholarship rulebooks contradict each other by barring concurrent award
 
 ## Agent Session
 
-The complete development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—has been exported and sanitized:
+{% agent_session gemini-cli-session-mvqzxm %}
 
+The complete development transcript for this agent session—covering Sanity Studio configuration, Context MCP tool integration, schema seeding, zero-hallucination verification, and interface refinement—has been curated and published on DEV:
+
+- **Interactive DEV Session**: `{% agent_session gemini-cli-session-mvqzxm %}`
 - **Session Files in Repository**:
-  - [scholarstack_agent_session.json](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.json) (Ready for Gemini CLI format)
-  - [scholarstack_agent_session.jsonl](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.jsonl) (Ready for Claude Code / Codex format)
-- **Live DEV Agent Session**: [Curate and View on DEV Agent Sessions](https://dev.to/agent_sessions/new)
-
-<!-- After uploading scholarstack_agent_session.json to https://dev.to/agent_sessions/new, paste the embed tag below: -->
-<!-- {% agent_session YOUR_SESSION_ID %} -->
+  - [scholarstack_agent_session.json](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.json) (Gemini CLI format)
+  - [scholarstack_agent_session.jsonl](https://github.com/Labreo/ScholarStack/blob/main/scholarstack_agent_session.jsonl) (Claude Code / Codex format)
 
 ### Curated Session Milestones
 
